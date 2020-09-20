@@ -3,6 +3,7 @@ package spring.security.jwt.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -22,14 +23,19 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     PasswordEncoder passwordEncoder;
-    
+
+    // Order of the antmatchers matters a lot. the child routes needs to be checked first and then the parent routes
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http    .csrf().disable()
+        http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "/api/v1/index", "css/*", "js/*").permitAll()
                 .antMatchers("/api/student/**").hasRole(STUDENT.name())
-                .antMatchers("/api/management/**").hasRole(ADMIN.name())
+                .antMatchers(HttpMethod.DELETE, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                .antMatchers(HttpMethod.POST, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                .antMatchers(HttpMethod.PUT, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
+                .antMatchers("/api/management/**").hasAnyRole(ADMIN.name(), TRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -42,26 +48,29 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails tamalUser = User.builder()
                 .username("tamal")
                 .password(passwordEncoder.encode("password"))
-                .roles(ADMIN.name())
+//                .roles(ADMIN.name())
+                .authorities(ADMIN.getAuthorities())
                 .build();
 
         UserDetails sasaDetais = User.builder()
                 .username("susanta")
                 .password(passwordEncoder.encode("password"))
-                .roles(STUDENT.name())
+//                .roles(STUDENT.name())
+                .authorities(STUDENT.getAuthorities())
                 .build();
 
         UserDetails sagiUser = User.builder()
                 .username("sagnik")
                 .password(passwordEncoder.encode("password"))
-                .roles(TRAINEE.name())
+//                .roles(TRAINEE.name())
+                .authorities(TRAINEE.getAuthorities())
                 .build();
 
         return new InMemoryUserDetailsManager(tamalUser, sasaDetais, sagiUser);
     }
 
     @Bean
-    PasswordEncoder encoder(){
+    PasswordEncoder encoder() {
         return new BCryptPasswordEncoder(10);
     }
 }
