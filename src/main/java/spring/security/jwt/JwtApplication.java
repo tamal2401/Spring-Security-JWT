@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -45,6 +47,7 @@ class MainController{
 }
 
 @RestController
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 class StudentManagementController{
 
 	public final static List<Student> stuArr = Arrays.asList(
@@ -54,22 +57,26 @@ class StudentManagementController{
 	);
 
 	@GetMapping("/api/management/all")
+	@PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_TRAINEE')")
 	public List<Student> findAllStudents(){
 		return stuArr;
 	}
 
 	@PostMapping("/api/management")
+	@PreAuthorize("hasAuthority('course:write')")
 	public void registerStudent(@RequestBody Student student){
 		System.out.println(student);
 
 	}
 
 	@DeleteMapping("/api/management/{studentId}")
+	@PreAuthorize("hasAuthority('course:write')")
 	public void Delete(@PathVariable("studentId")Integer id){
 
 	}
 
 	@PutMapping("/api/management/{studentId}")
+	@PreAuthorize("hasAuthority('course:write')")
 	public void updateStudent(@PathVariable("studentId")Integer id, @RequestBody Student student){
 		System.out.println(id+" : "+student.toString());
 	}

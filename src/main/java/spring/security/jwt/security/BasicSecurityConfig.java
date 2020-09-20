@@ -24,7 +24,10 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    // Order of the antmatchers matters a lot. the child routes needs to be checked first and then the parent routes
+    /**
+     * Order of the antmatchers matters a lot.
+     * the child routes needs to be checked first and then the parent routes
+     */
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -32,10 +35,10 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/", "/api/v1/index", "css/*", "js/*").permitAll()
                 .antMatchers("/api/student/**").hasRole(STUDENT.name())
-                .antMatchers(HttpMethod.DELETE, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.POST, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.PUT, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers("/api/management/**").hasAnyRole(ADMIN.name(), TRAINEE.name())
+//                .antMatchers(HttpMethod.DELETE, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
+//                .antMatchers(HttpMethod.POST, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
+//                .antMatchers(HttpMethod.PUT, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
+//                .antMatchers("/api/management/**").hasAnyRole(ADMIN.name(), TRAINEE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
