@@ -12,7 +12,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.stereotype.Service;
+
+import static spring.security.jwt.security.UsePermissions.*;
+import static spring.security.jwt.security.UserRoles.*;
 
 @Configuration
 @EnableWebSecurity
@@ -23,10 +25,11 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
     
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http    .authorizeRequests()
+        http    .csrf().disable()
+                .authorizeRequests()
                 .antMatchers("/", "/api/v1/index", "css/*", "js/*").permitAll()
-                .antMatchers("/api/student/**").hasRole(UserRoles.STUDENT.name())
-                .antMatchers("/api/admin/**").hasRole(UserRoles.ADMIN.name())
+                .antMatchers("/api/student/**").hasRole(STUDENT.name())
+                .antMatchers("/api/management/**").hasRole(ADMIN.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -39,16 +42,22 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails tamalUser = User.builder()
                 .username("tamal")
                 .password(passwordEncoder.encode("password"))
-                .roles(UserRoles.ADMIN.name())
+                .roles(ADMIN.name())
                 .build();
 
         UserDetails sasaDetais = User.builder()
                 .username("susanta")
                 .password(passwordEncoder.encode("password"))
-                .roles(UserRoles.STUDENT.name())
+                .roles(STUDENT.name())
                 .build();
 
-        return new InMemoryUserDetailsManager(tamalUser, sasaDetais);
+        UserDetails sagiUser = User.builder()
+                .username("sagnik")
+                .password(passwordEncoder.encode("password"))
+                .roles(TRAINEE.name())
+                .build();
+
+        return new InMemoryUserDetailsManager(tamalUser, sasaDetais, sagiUser);
     }
 
     @Bean

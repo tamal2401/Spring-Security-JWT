@@ -9,7 +9,8 @@ import static spring.security.jwt.security.UsePermissions.*;
 
 public enum UserRoles {
     ADMIN(Sets.newHashSet(STUDENT_READ, STUDENT_WRITE, COURSE_READ, COURSE_WRITE)),
-    STUDENT(Sets.newHashSet(STUDENT_READ, STUDENT_WRITE));
+    STUDENT(Sets.newHashSet(STUDENT_READ, STUDENT_WRITE, COURSE_READ)),
+    TRAINEE(Sets.newHashSet(STUDENT_READ, COURSE_READ));
 
     private Set<UsePermissions> permissions = new HashSet<>();
 
