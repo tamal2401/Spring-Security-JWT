@@ -24,7 +24,10 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    // Order of the antmatchers matters a lot. the child routes needs to be checked first and then the parent routes
+    /**
+     *  Order of the antmatchers matters a lot.
+     *  the child routes needs to be checked first and then the parent routes
+     */
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
