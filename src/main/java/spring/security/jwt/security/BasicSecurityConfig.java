@@ -3,6 +3,7 @@ package spring.security.jwt.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -12,7 +13,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.stereotype.Service;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+
+import java.util.concurrent.TimeUnit;
+
+import static spring.security.jwt.security.UsePermissions.*;
+import static spring.security.jwt.security.UserRoles.*;
 
 @Configuration
 @EnableWebSecurity
@@ -20,17 +26,36 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     PasswordEncoder passwordEncoder;
-    
+
+    /**
+     * Order of the antmatchers matters a lot.
+     * the child routes needs to be checked first and then the parent routes
+     */
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http    .authorizeRequests()
-                .antMatchers("/", "/api/v1/index", "css/*", "js/*").permitAll()
-                .antMatchers("/api/student/**").hasRole(UserRoles.STUDENT.name())
-                .antMatchers("/api/admin/**").hasRole(UserRoles.ADMIN.name())
+        http
+                .csrf().disable()
+                .authorizeRequests()
+                .antMatchers("/", "/api/index", "css/*", "js/*").permitAll()
+                .antMatchers("/api/student/**").hasAnyAuthority(STUDENT_READ.getPermission(), STUDENT_WRITE.getPermission(), COURSE_READ.getPermission())
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic();
+                .formLogin()
+                .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/dashboard", true)
+                .and()
+                .rememberMe()
+                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(2))
+                .key("key_to_implement_MD5_hash_algorithm");
+//                .and()
+//                .logout()
+//                .logoutUrl("/logout")
+//                .clearAuthentication(true)
+//                .invalidateHttpSession(true)
+//                .deleteCookies("JSESSIONID", "remember-me")
+//                .logoutSuccessUrl("/login").permitAll();
     }
 
     @Override
@@ -39,20 +64,29 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails tamalUser = User.builder()
                 .username("tamal")
                 .password(passwordEncoder.encode("password"))
-                .roles(UserRoles.ADMIN.name())
+//                .roles(ADMIN.name())
+                .authorities(ADMIN.getAuthorities())
                 .build();
 
         UserDetails sasaDetais = User.builder()
                 .username("susanta")
                 .password(passwordEncoder.encode("password"))
-                .roles(UserRoles.STUDENT.name())
+//                .roles(STUDENT.name())
+                .authorities(STUDENT.getAuthorities())
                 .build();
 
-        return new InMemoryUserDetailsManager(tamalUser, sasaDetais);
+        UserDetails sagiUser = User.builder()
+                .username("sagnik")
+                .password(passwordEncoder.encode("password"))
+//                .roles(TRAINEE.name())
+                .authorities(TRAINEE.getAuthorities())
+                .build();
+
+        return new InMemoryUserDetailsManager(tamalUser, sasaDetais, sagiUser);
     }
 
     @Bean
-    PasswordEncoder encoder(){
+    PasswordEncoder encoder() {
         return new BCryptPasswordEncoder(10);
     }
 }
