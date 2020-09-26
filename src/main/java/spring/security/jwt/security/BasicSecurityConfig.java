@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import java.util.concurrent.TimeUnit;
+
 import static spring.security.jwt.security.UsePermissions.*;
 import static spring.security.jwt.security.UserRoles.*;
 
@@ -26,26 +28,34 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
     PasswordEncoder passwordEncoder;
 
     /**
-     *  Order of the antmatchers matters a lot.
-     *  the child routes needs to be checked first and then the parent routes
+     * Order of the antmatchers matters a lot.
+     * the child routes needs to be checked first and then the parent routes
      */
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .and()
+                .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "/api/v1/index", "css/*", "js/*").permitAll()
-                .antMatchers("/api/student/**").hasRole(STUDENT.name())
-                .antMatchers(HttpMethod.DELETE, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.POST, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers(HttpMethod.PUT, "/api/management/**").hasAuthority(COURSE_WRITE.getPermission())
-                .antMatchers("/api/management/**").hasAnyRole(ADMIN.name(), TRAINEE.name())
+                .antMatchers("/", "/api/index", "css/*", "js/*").permitAll()
+                .antMatchers("/api/student/**").hasAnyAuthority(STUDENT_READ.getPermission(), STUDENT_WRITE.getPermission(), COURSE_READ.getPermission())
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic();
+                .formLogin()
+                .loginPage("/login").permitAll()
+                .defaultSuccessUrl("/dashboard", true)
+                .and()
+                .rememberMe()
+                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(2))
+                .key("key_to_implement_MD5_hash_algorithm");
+//                .and()
+//                .logout()
+//                .logoutUrl("/logout")
+//                .clearAuthentication(true)
+//                .invalidateHttpSession(true)
+//                .deleteCookies("JSESSIONID", "remember-me")
+//                .logoutSuccessUrl("/login").permitAll();
     }
 
     @Override
