@@ -43,19 +43,23 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/dashboard", true)
+                    .loginPage("/login")
+                    .permitAll()
+                    .defaultSuccessUrl("/dashboard", true)
+                        .passwordParameter("password")
+                        .usernameParameter("username")  // pwd & username parameter is used to identify the json or field key for the following fields
+                    .and()
+                    .rememberMe()
+                        .rememberMeParameter("remember-me")
+                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(2))
+                    .key("key_to_implement_MD5_hash_algorithm")
                 .and()
-                .rememberMe()
-                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(2))
-                .key("key_to_implement_MD5_hash_algorithm");
-//                .and()
-//                .logout()
-//                .logoutUrl("/logout")
-//                .clearAuthentication(true)
-//                .invalidateHttpSession(true)
-//                .deleteCookies("JSESSIONID", "remember-me")
-//                .logoutSuccessUrl("/login").permitAll();
+                .logout()
+                    .logoutUrl("/logout")
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .logoutSuccessUrl("/login").permitAll();
     }
 
     @Override
