@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import spring.security.jwt.security.auth.ApplicationUser;
 
 import java.util.concurrent.TimeUnit;
 
@@ -43,34 +44,42 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticated()
                 .and()
                 .formLogin()
-                    .loginPage("/login")
-                    .permitAll()
-                    .defaultSuccessUrl("/dashboard", true)
-                        .passwordParameter("password")
-                        .usernameParameter("username")  // pwd & username parameter is used to identify the json or field key for the following fields
-                    .and()
-                    .rememberMe()
-                        .rememberMeParameter("remember-me")
-                    .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(2))
-                    .key("key_to_implement_MD5_hash_algorithm")
+                .loginPage("/login")
+                .permitAll()
+                .defaultSuccessUrl("/dashboard", true)
+                .passwordParameter("password")
+                .usernameParameter("username")  // pwd & username parameter is used to identify the json or field key for the following fields
+                .and()
+                .rememberMe()
+                .rememberMeParameter("remember-me")
+                .tokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(2))
+                .key("key_to_implement_MD5_hash_algorithm")
                 .and()
                 .logout()
-                    .logoutUrl("/logout")
-                    .clearAuthentication(true)
-                    .invalidateHttpSession(true)
-                    .deleteCookies("JSESSIONID", "remember-me")
-                    .logoutSuccessUrl("/login").permitAll();
+                .logoutUrl("/logout")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID", "remember-me")
+                .logoutSuccessUrl("/login").permitAll();
     }
 
     @Override
     @Bean
     protected UserDetailsService userDetailsService() {
-        UserDetails tamalUser = User.builder()
-                .username("tamal")
-                .password(passwordEncoder.encode("password"))
-//                .roles(ADMIN.name())
-                .authorities(ADMIN.getAuthorities())
-                .build();
+        UserDetails tamalUser = new ApplicationUser("tamal",
+                "password",
+                ADMIN.getAuthorities(),
+                false,
+                false,
+                true,
+                true);
+
+//        UserDetails tamalUser = User.builder()
+//                .username("tamal")
+//                .password(passwordEncoder.encode("password"))
+////                .roles(ADMIN.name())
+//                .authorities(ADMIN.getAuthorities())
+//                .build();
 
         UserDetails sasaDetais = User.builder()
                 .username("susanta")
