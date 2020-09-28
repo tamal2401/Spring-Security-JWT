@@ -4,28 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import spring.security.jwt.security.auth.ApplicationUser;
 import spring.security.jwt.security.auth.ApplicationUserDetailsService;
 import spring.security.jwt.security.auth.UserDetailsDaoImpl;
 
 import java.util.concurrent.TimeUnit;
 
 import static spring.security.jwt.security.UsePermissions.*;
-import static spring.security.jwt.security.UserRoles.*;
 
 @Configuration
 @EnableWebSecurity
@@ -51,7 +42,7 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "/dashboard", "/api/index", "css/*", "js/*").permitAll()
+                .antMatchers("/", "/api/index", "css/*", "js/*").permitAll()
                 .antMatchers("/api/student/**").hasAnyAuthority(STUDENT_READ.getPermission(), STUDENT_WRITE.getPermission(), COURSE_READ.getPermission())
                 .anyRequest()
                 .authenticated()
