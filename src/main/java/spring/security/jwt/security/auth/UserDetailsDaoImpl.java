@@ -18,7 +18,9 @@ public class UserDetailsDaoImpl implements UserDetailsDao {
 
     @Override
     public Optional<ApplicationUser> getUserByUserName(String userName) {
-        return getUsers().stream().filter(user->user.getUsername().equals(userName.trim()))
+        return getUsers()
+                .stream()
+                .filter(user->user.getUsername().equals(userName.trim()))
                 .findFirst();
     }
 
