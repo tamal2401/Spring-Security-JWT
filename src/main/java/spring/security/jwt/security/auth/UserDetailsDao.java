@@ -6,5 +6,5 @@ import java.util.Optional;
 
 public interface UserDetailsDao {
 
-    Optional<UserDetails> getUserByUserName(String userName);
+    Optional<ApplicationUser> getUserByUserName(String userName);
 }

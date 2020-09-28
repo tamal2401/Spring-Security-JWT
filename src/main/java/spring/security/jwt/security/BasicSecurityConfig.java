@@ -1,9 +1,13 @@
 package spring.security.jwt.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -15,6 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import spring.security.jwt.security.auth.ApplicationUser;
+import spring.security.jwt.security.auth.ApplicationUserDetailsService;
+import spring.security.jwt.security.auth.UserDetailsDaoImpl;
 
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +34,13 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    @Qualifier("MockUserRepo")
+    UserDetailsDaoImpl userDetailsDao;
+
+    @Autowired
+    ApplicationUserDetailsService applicationUserDetailsService;
+
     /**
      * Order of the antmatchers matters a lot.
      * the child routes needs to be checked first and then the parent routes
@@ -38,7 +51,7 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/", "/api/index", "css/*", "js/*").permitAll()
+                .antMatchers("/", "/dashboard", "/api/index", "css/*", "js/*").permitAll()
                 .antMatchers("/api/student/**").hasAnyAuthority(STUDENT_READ.getPermission(), STUDENT_WRITE.getPermission(), COURSE_READ.getPermission())
                 .anyRequest()
                 .authenticated()
@@ -63,39 +76,22 @@ public class BasicSecurityConfig extends WebSecurityConfigurerAdapter {
                 .logoutSuccessUrl("/login").permitAll();
     }
 
+//    @Override
+//    protected UserDetailsService userDetailsService() {
+//        return new ApplicationUserDetailsService(userDetailsDao);
+//    }
+
+
     @Override
-    @Bean
-    protected UserDetailsService userDetailsService() {
-        UserDetails tamalUser = new ApplicationUser("tamal",
-                "password",
-                ADMIN.getAuthorities(),
-                false,
-                false,
-                true,
-                true);
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.authenticationProvider(getAuthnticationProvider());
+    }
 
-//        UserDetails tamalUser = User.builder()
-//                .username("tamal")
-//                .password(passwordEncoder.encode("password"))
-////                .roles(ADMIN.name())
-//                .authorities(ADMIN.getAuthorities())
-//                .build();
-
-        UserDetails sasaDetais = User.builder()
-                .username("susanta")
-                .password(passwordEncoder.encode("password"))
-//                .roles(STUDENT.name())
-                .authorities(STUDENT.getAuthorities())
-                .build();
-
-        UserDetails sagiUser = User.builder()
-                .username("sagnik")
-                .password(passwordEncoder.encode("password"))
-//                .roles(TRAINEE.name())
-                .authorities(TRAINEE.getAuthorities())
-                .build();
-
-        return new InMemoryUserDetailsManager(tamalUser, sasaDetais, sagiUser);
+    private DaoAuthenticationProvider getAuthnticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setPasswordEncoder(passwordEncoder);
+        provider.setUserDetailsService(applicationUserDetailsService);
+        return provider;
     }
 
     @Bean
