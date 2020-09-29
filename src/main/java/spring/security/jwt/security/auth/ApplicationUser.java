@@ -15,8 +15,8 @@ public class ApplicationUser implements UserDetails {
     public final boolean isCredentialsNonExpired;
     public final boolean isEnabled;
 
-    public ApplicationUser(String password,
-                           String username,
+    public ApplicationUser(String username,
+                           String password,
                            Collection<? extends GrantedAuthority> authorities,
                            boolean isAccountNonExpired,
                            boolean isAccountNonLocked,
@@ -38,31 +38,31 @@ public class ApplicationUser implements UserDetails {
 
     @Override
     public String getPassword() {
-        return null;
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return null;
+        return username;
     }
 
     @Override
     public boolean isAccountNonExpired() {
-        return false;
+        return isAccountNonExpired;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return isAccountNonLocked;
     }
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return false;
+        return isCredentialsNonExpired;
     }
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return isEnabled;
     }
 }
